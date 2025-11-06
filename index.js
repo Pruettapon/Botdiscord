@@ -1,6 +1,8 @@
 // A. นำเข้าไลบรารีและโหลดค่าจาก .env
 require('dotenv').config(); 
 const { Client, GatewayIntentBits } = require('discord.js');
+const http = require('http'); // ⬅️ เพิ่มบรรทัดนี้
+const PORT = process.env.PORT || 3000; // ⬅️ เพิ่มบรรทัดนี้
 
 // B. กำหนด Intents (สำคัญมากสำหรับฟังก์ชัน Role อัตโนมัติ)
 // ต้องมี GuildMembers Intent และ MessageContent Intent
@@ -66,3 +68,9 @@ client.on('messageCreate', msg => {
 
 // F. เข้าสู่ระบบบอท
 client.login(process.env.DISCORD_TOKEN);
+http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Discord Bot is running and online!');
+}).listen(PORT, () => {
+    console.log(`Web Server is running on port ${PORT}`);
+});
