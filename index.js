@@ -74,3 +74,58 @@ http.createServer((req, res) => {
 }).listen(PORT, () => {
     console.log(`Web Server is running on port ${PORT}`);
 });
+// ในไฟล์ index.js (เพิ่ม Event นี้ต่อจาก guildMemberAdd)
+
+// ⚠️ เปลี่ยน ID นี้เป็น ID ของช่องแชท Log ที่ Admin ดูเท่านั้น
+const logChannelId = '1436188031366201494'; 
+
+client.on('guildMemberRemove', member => {
+    const logChannel = member.guild.channels.cache.get(logChannelId);
+    if (!logChannel) return; // ไม่ทำอะไรถ้าหาช่องแชทไม่เจอ
+
+    const embed = {
+        color: 0xff0000, // สีแดง
+        title: '🔴 สมาชิกออกจากเซิร์ฟเวอร์',
+        fields: [
+            {
+                name: '👤 ผู้ใช้',
+                value: `${member.user.tag} (${member.id})`,
+            },
+            {
+                name: '⏰ ระยะเวลาที่อยู่',
+                // คำนวณความแตกต่างระหว่างเวลาที่เข้าร่วมถึงเวลาออก
+                value: `เข้าร่วมเมื่อ: ${new Date(member.joinedTimestamp).toLocaleDateString()}`,
+            },
+        ],
+        timestamp: new Date(),
+    };
+
+    logChannel.send({ embeds: [embed] });
+});
+
+// ในไฟล์ index.js
+
+client.on('messageDelete', message => {
+    // ⚠️ ตรวจสอบว่าข้อความไม่ได้ถูกลบโดยบอทเอง
+    if (message.author.bot) return; 
+    
+    // ⚠️ เปลี่ยน ID นี้เป็น ID ของช่องแชท Log เดียวกันกับข้างบน
+    const logChannelId = '1436188466525507715'; 
+    const logChannel = message.guild.channels.cache.get(logChannelId);
+    if (!logChannel) return;
+
+    const embed = {
+        color: 0xf0e68c, // สีกากี
+        title: '🗑️ ข้อความถูกลบ',
+        description: `ข้อความของผู้ใช้ **${message.author.tag}** ถูกลบใน ${message.channel.name}`,
+        fields: [
+            {
+                name: 'เนื้อหาข้อความ',
+                value: message.content ? message.content.substring(0, 1024) : 'ไม่พบเนื้อหา (อาจเป็นข้อความ Embed หรือรูปภาพ)',
+            },
+        ],
+        timestamp: new Date(),
+    };
+
+    logChannel.send({ embeds: [embed] });
+});
